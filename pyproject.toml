@@ -1,0 +1,10 @@
+[project]
+name = "StormEventsCommentsCollector"
+version = "0.1.0"
+description = "Консольное приложение для сбора комментариев и последующей загрузки данных в гугл таблицы"
+requires-python = ">=3.13"
+dependencies = [
+    "gspread>=6.2.1",
+    "httpx>=0.28.1",
+    "python-dotenv>=1.2.2",
+]
