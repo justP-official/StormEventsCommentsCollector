@@ -56,24 +56,8 @@ class CommentsService:
 
         users_links = []
 
-        response = await client.get(
-            "users.get",
-            params={
-                "user_ids": ", ".join((str(comment.get("from_id")) for comment in comments)),
-                "fields": ["domain"],
-                "v": "5.199",
-            }
-        )
-
-        data = response.json()
-
-        if data.get("error"):
-            raise ClientError(data.get("error").get("error_msg"))
-
-        users = data.get("response")
-
-        for user in users:
-            users_links.append("https://vk.com/" + user.get("domain"))
+        for comment in comments:
+            users_links.append("https://vk.com/id" + str(comment.get("from_id")))
 
         return users_links
 

@@ -4,7 +4,7 @@ from comments.exceptions import HalperException
 
 
 class CommentsHelper:
-    __URL_PATTERN = r'https?://[^\s<>"\')\]]+'
+    __URL_PATTERN = r'^(?:https?://)?(?:www\.)?[^\s<>"\')\]]+'
     __VK_TOPIC_PATTERN = r'^https://vk\.com/topic-\d+_\d+$'
 
     @classmethod
@@ -37,7 +37,10 @@ class CommentsHelper:
 
     @classmethod
     async def clean_url(cls, url: str) -> str:
-        return re.findall(cls.__URL_PATTERN, url)[0]
+        try:
+            return re.findall(cls.__URL_PATTERN, url)[0]
+        except IndexError:
+            return "None"
 
     @classmethod
     async def to_dict(cls, comments: list, users_links: list) -> dict[str, str]:

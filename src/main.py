@@ -24,9 +24,13 @@ async def main():
 
         comments = await comments_service.run(board_link)
 
+        is_debug = os.environ.get("DEBUG")
+
+        sheet_url = os.environ.get("GOOGLE_SHEET_URL" if is_debug == "FALSE" else "DEV_GOOGLE_SHEET_URL")
+
         google_sheet_service = GoogleSheetsService(
             "src/google_sheets/creds.json",
-            os.environ.get("GOOGLE_SHEET_URL")
+            sheet_url
         )
 
         await google_sheet_service.insert_data(comments, day=day)

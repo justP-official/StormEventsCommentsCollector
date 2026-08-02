@@ -5,12 +5,13 @@ from gspread.utils import rowcol_to_a1
 
 from dotenv import find_dotenv, load_dotenv
 
+from common.decorators import measure_time
 
 load_dotenv(find_dotenv(".env"))
 
 class GoogleSheetsService:
     __EXCLUDED_WORKSHEETS = {
-        "Общий список участников",
+        "Список",
         "Общий",
         "Наши тексты",
         "Штрафы",
@@ -30,8 +31,9 @@ class GoogleSheetsService:
 
     async def get_authors(self, worksheet: gspread.Worksheet):
         print(f"Собираем запускантов с листа: {worksheet.title}")
-        return list(filter(bool, worksheet.col_values(1)[2:-2]))  # убираем пустые строки и заголовок с подвалом
+        return list(filter(bool, worksheet.col_values(1)[2:-10]))  # убираем пустые строки и заголовок с подвалом
 
+    @measure_time
     async def insert_data(self, data: dict, day: int = 1):
         START_COL = 4
         COL_OFFSET = 5
