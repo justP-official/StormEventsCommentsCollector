@@ -4,8 +4,13 @@ from comments.exceptions import HalperException
 
 
 class CommentsHelper:
-    __URL_PATTERN = r'^(?:https?://)?(?:www\.)?[^\s<>"\')\]]+'
-    __VK_TOPIC_PATTERN = r'^https://vk\.com/topic-\d+_\d+$'
+    __URL_PATTERN = re.compile(
+    r'(?i)\b(?:https?://)?(?:www\.)?'
+    r'(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+'
+    r'[a-z]{2,}'
+    r'(?::\d{1,5})?(?:/[^\s<>"\')\]]*)?'
+    )
+    __VK_TOPIC_PATTERN = r'^https://vk\.ru/topic-\d+_\d+$'
 
     @classmethod
     async def get_url(cls) -> str | None:
@@ -36,12 +41,23 @@ class CommentsHelper:
                 continue
 
     @classmethod
-    async def clean_url(cls, url: str) -> str:
-        try:
-            return re.findall(cls.__URL_PATTERN, url)[0]
-        except IndexError:
-            return "None"
+    async def clean_url(cls, url: str) -> str | None:
+        match = cls.__URL_PATTERN.search(url)
+        return match.group(0) if match else None
 
     @classmethod
     async def to_dict(cls, comments: list, users_links: list) -> dict[str, str]:
-        return {link: await cls.clean_url(comment.get("text")) for link, comment in zip(users_links, comments)}
+        d = {}
+
+        for link, comment in zip(users_links, comments):
+            cleaned_comment = await cls.clean_url(comment.get("text"))
+
+            if link in d:
+                continue
+
+            if cleaned_comment is None:
+                continue
+
+            d[link] = cleaned_comment
+
+        return d

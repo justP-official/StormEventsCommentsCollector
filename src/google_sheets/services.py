@@ -31,7 +31,18 @@ class GoogleSheetsService:
 
     async def get_authors(self, worksheet: gspread.Worksheet):
         print(f"Собираем запускантов с листа: {worksheet.title}")
-        return list(filter(bool, worksheet.col_values(1)[2:-10]))  # убираем пустые строки и заголовок с подвалом
+        # убираем пустые строки и заголовок с подвалом
+
+        column = worksheet.col_values(1)[2:] # берём первую колонку и отсекаем заголовок
+
+        authors = []
+
+        for author in column:
+            if not author:
+                break
+            authors.append(author)
+
+        return authors
 
     @measure_time
     async def insert_data(self, data: dict, day: int = 1):
@@ -41,13 +52,20 @@ class GoogleSheetsService:
 
         worksheets = await self.get_worksheets()
 
+        counters = dict.fromkeys((s.title for s in worksheets), 0)
+
         for worksheet in worksheets:
             users = await self.get_authors(worksheet)
 
             if users:
                 links = []
                 for user in users:
-                    links.append([data.get(user, '---')])
+                    text = data.get(user, '---')
+
+                    if text != '---':
+                        counters[worksheet.title] += 1
+
+                    links.append([text])
 
                 start_cell = rowcol_to_a1(
                     worksheet.find(users[0]).row,
@@ -67,3 +85,8 @@ class GoogleSheetsService:
                     }
                 ])
             await asyncio.sleep(1)
+
+        print(f"Собрано текстов по заданию №{day}:")
+
+        for reader, counts in counters.items():
+            print(reader, counts, end='\n')
